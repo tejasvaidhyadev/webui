@@ -44,6 +44,13 @@ button {
     padding: 0;
     border: 2px solid red;
 }
+.hatchingOverlay {
+    position: absolute;
+    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="none" stroke="gray" viewBox="0 0 100 100"><filter id="noise" x="0" y="0" width="100%" height="100%"><feTurbulence baseFrequency="0.9" numOctaves="3" result="noise"/></filter><rect width="100" height="100" filter="url(%23noise)"/></svg>') repeat;
+    /* background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="none" viewBox="0 0 100 100"><filter id="noise" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="2" stitchTiles="stitch"/></filter><rect width="100" height="100" filter="url(%23noise)" fill="gray"/></svg>') repeat; */
+    /* background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" fill="none" viewBox="0 0 100 100"><filter id="noise"><feTurbulence type="fractalNoise" baseFrequency="2.5" numOctaves="5" result="noisy"/></filter><rect width="100" height="100" filter="url(%23noise)" fill="gray"/></svg>') repeat; */
+    display: none;
+}
 .interactive-text {
     cursor: pointer;
     text-decoration: underline;

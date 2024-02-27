@@ -18,6 +18,11 @@
         <div class="image">
             <img src="{{ url_for('image', index=index) }}" alt="Image" id="imagePreview">
             <div class="boundingBox" id="boundingBox"></div>
+            <!-- Hatching overlays -->
+            <div class="hatchingOverlay" id="overlayTop"></div>
+            <div class="hatchingOverlay" id="overlayRight"></div>
+            <div class="hatchingOverlay" id="overlayBottom"></div>
+            <div class="hatchingOverlay" id="overlayLeft"></div>
         </div>
         <div class="text">
             <div class="button-container">
