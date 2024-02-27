@@ -4,6 +4,13 @@
     <meta charset="UTF-8">
     <title>Document Viewer</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .button-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <div id="coordinatesDisplay"></div>
@@ -13,6 +20,15 @@
             <div class="boundingBox" id="boundingBox"></div>
         </div>
         <div class="text">
+            <div class="button-container">
+                <a href="{{ url_for('index', index=index-1) }}"><button>⬅️</button></a>
+                <form action="{{ url_for('vote') }}" method="post" style="display: flex;">
+                    <input type="hidden" name="index" value="{{ index }}">
+                    <button type="submit" name="vote" value="👍">👍</button>
+                    <button type="submit" name="vote" value="👎">👎</button>
+                </form>
+                <a href="{{ url_for('index', index=index+1) }}"><button>➡️</button></a>
+            </div>
             {{ processed_text | safe }}
         </div>
     </div>

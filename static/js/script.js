@@ -24,7 +24,6 @@ function showBoundingBox(x1, y1, x2, y2) {
     var rect = image.getBoundingClientRect();
     var scaleWidth = rect.width / 100;
     var scaleHeight = rect.height / 100;
-
     boundingBox.style.left = (rect.left + x1 * scaleWidth) + "px";
     boundingBox.style.top = (rect.top + y1 * scaleHeight) + "px";
     boundingBox.style.width = ((x2 - x1) * scaleWidth) + "px";

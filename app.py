@@ -11,20 +11,15 @@ data = pd.read_parquet('data.parquet')
 data['vote'] = 0
 
 def preprocess_text(ip, op):
-    # Convert newlines to <br>
     text = f'Input:\n{ip}\n\nOutput:\n{op}'.replace('\n', '<br>')
-    # Wrap <ground> content in a span with data attributes
     def replace_ground(match):
-        # print(match.group(1))
         coords = json.loads(f'[{match.group(1)}]')
         content = match.group(2)
-        # print(len(coords), type(coords))
         return f'<span class="interactive-text" onmouseover="showBoundingBox({coords[0]}, {coords[1]}, {coords[2]}, {coords[3]})" onmouseout="hideBoundingBox()">{content}💬</span>'
     text = re.sub(r'<ground \[([0-9, ]+)\]>(.*?)</ground>', replace_ground, text)
     return text
 
 data['text'] = data.apply(lambda row: preprocess_text(row['input'], row['output']), axis=1)
-
 
 def save_votes(index, vote):
     with open('votes.log', 'a') as file:
@@ -46,16 +41,12 @@ def index(index=0):
 def vote():
     index = int(request.form.get('index'))
     vote_value = request.form.get('vote')
-    vote = 1 if vote_value == 'positive' else -1
-
+    vote = 1 if vote_value == '👍' else -1
     data.at[index, 'vote'] = vote
     save_votes(index, vote_value)
-
-    index += 1  # Move to the next image
-
+    index += 1
     if index >= len(data):
-        index = 0  # Optional: Loop back to the first image if at the end
-
+        index = 0
     return redirect(url_for('index', index=index))
 
 @app.route('/image/<int:index>')
