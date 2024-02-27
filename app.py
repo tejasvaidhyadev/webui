@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('hello.html')
 
 @app.route('/generate_story', methods=['POST'])
 def generate_story():

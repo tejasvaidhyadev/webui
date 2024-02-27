@@ -174,7 +174,7 @@
             <label for="textInput">Text Prompt:</label>
             <textarea id="textInput" placeholder="Enter your text prompt here..."></textarea>
         </div>
-        <button class="btn" onclick="getImageAndTextPrompt()">Submit</button>
+        <button class="btn" onclick="generateStory()">Submit</button>
         <button class="btn" onclick="clearFields()">Clear</button>
         <div id="output"></div>
     </div>
@@ -226,6 +226,54 @@ function clearFields() {
     document.getElementById("textInput").value = "";
     document.getElementById("output").innerHTML = "";
     document.getElementById("imageInput").value = "";
+}
+function generateStory() {
+        var storyInput = document.getElementById('textInput').value;
+        var requestData = {
+            contents: [
+                {
+                    parts: [
+                        {
+                            text: storyInput
+                        }
+                    ]
+                }
+            ]
+        };
+
+        fetch('/generate_story', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestData)
+        })
+        // print the response to the console
+        .then(response => response.json())
+        .then(data => {
+            displayStory(data);
+            console.log(data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    function displayStory(data) {
+    var outputDiv = document.getElementById('output');
+    outputDiv.innerHTML = '';
+    if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
+        var story = data.candidates[0].content.parts[0].text;
+        var storyParagraph = document.createElement('p');
+        storyParagraph.textContent = story;
+        outputDiv.appendChild(storyParagraph);
+
+        // Stream the received output and markdownify it
+        var markdownStory = '## Story\n\n' + story; // Adding markdown header
+        outputDiv.innerHTML = marked(markdownStory); // Assuming marked.js library is used for markdown conversion
+    } else {
+        outputDiv.textContent = 'Unable to generate story. Please try again.';
+    }
 }
 
 function handleImageUpload(event) {
