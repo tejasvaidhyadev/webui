@@ -15,6 +15,15 @@
   border-radius: 5px;
   margin-bottom: 20px;
 }
+#coordinatesDisplay {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border: 1px solid blue;
+            color: blue;
+            border-radius: 5px;
+            display: none;
+        }
 
 .tab button {
   background-color: inherit;
@@ -218,6 +227,8 @@
     </div>
 
   </div>
+  <div id="coordinatesDisplay"></div>
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script> <!-- Include marked.js library -->
      
 <script>
@@ -227,6 +238,7 @@ function clearFields() {
     document.getElementById("output").innerHTML = "";
     document.getElementById("imageInput").value = "";
 }
+
 function generateStory() {
         var storyInput = document.getElementById('textInput').value;
         var requestData = {
@@ -450,6 +462,32 @@ function updateTokenLimit() {
         var value = slider.value;
         document.getElementById("tokenLimitValue").innerText = value;
     }
+
+    // Function to get coordinates on hover
+    function getCoordinates(event) {
+    var image = event.target;
+    var rect = image.getBoundingClientRect(); // Get the position of the image relative to the viewport
+    var x = event.clientX - rect.left; // Calculate the x-coordinate relative to the image
+    var y = event.clientY - rect.top; // Calculate the y-coordinate relative to the image
+
+    // Display the coordinates
+    var coordinatesDisplay = document.getElementById("coordinatesDisplay");
+    coordinatesDisplay.style.display = "block";
+    coordinatesDisplay.style.left = event.clientX + "px";
+    coordinatesDisplay.style.top = event.clientY + "px";
+    coordinatesDisplay.textContent = "(" + x + ", " + y + ")";
+}
+
+// Add event listener to the image for mousemove event
+var imagePreview = document.getElementById("imagePreview");
+imagePreview.addEventListener("mousemove", getCoordinates);
+
+// Hide coordinates display when mouse leaves the image
+imagePreview.addEventListener("mouseleave", function() {
+    var coordinatesDisplay = document.getElementById("coordinatesDisplay");
+    coordinatesDisplay.style.display = "none";
+});
+
 </script>
 </body>
 </html>
