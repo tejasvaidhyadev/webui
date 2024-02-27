@@ -1,33 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Detecto</title>
-
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <meta charset="UTF-8">
+    <title>Document Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div id="coordinatesDisplay"></div>
     <div class="container">
-        <div class="left-section">
-            <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
-            <div id="imagePreview" class="input-group">
-                <label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
-                    <p>Drag & Drop Your Document</p>
-                </label>
-            </div>
-            <button class="btn" onclick="generateStory()">Submit</button>
-            <button class="btn" onclick="clearFields()">Clear</button>
-            <div id="output"></div>
+        <div class="image">
+            <img src="{{ url_for('image', index=index) }}" alt="Image" id="imagePreview">
+            <div class="boundingBox" id="boundingBox"></div>
         </div>
-        <div class="right-section">
-            <div class="input-group">
-                <textarea id="textInput" placeholder="Enter your text input here..."></textarea>
-            </div>
+        <div class="text">
+            {{ processed_text | safe }}
         </div>
     </div>
-    <div id="coordinatesDisplay"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
 </body>
 </html>
