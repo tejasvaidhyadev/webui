@@ -25,6 +25,15 @@
             display: none;
         }
 
+
+.selectionBox {
+    position: absolute;
+    border: 1px dashed red;
+    background-color: rgba(255, 0, 0, 0.1);
+    pointer-events: none;
+}
+
+
 .tab button {
   background-color: inherit;
   float: left;
@@ -55,6 +64,12 @@
 .tabcontent.active {
   display: block;
 }
+.bounding-box {
+            position: absolute;
+            border: 2px solid red;
+            pointer-events: none;
+        }
+
     .container {
         display: flex;
         max-width: 1000px;
@@ -232,6 +247,42 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script> <!-- Include marked.js library -->
      
 <script>
+
+// // Function to plot bounding boxes
+//     function plotBoundingBoxes() {
+//     const boundingBoxData = [
+//         { label: "Launch now", coordinates: [335, 126, 524, 141] },
+//         { label: "Build something people want", coordinates: [335, 165, 570, 180] },
+//         // Add other bounding box data here
+//     ];
+
+//     const imagePreview = document.getElementById("imagePreview");
+//     const image = imagePreview.querySelector("img");
+
+//     boundingBoxData.forEach(data => {
+//         const [x, y, width, height] = data.coordinates;
+//         const boundingBox = document.createElement("div");
+//         boundingBox.className = "bounding-box";
+//         boundingBox.style.left = x + "px";
+//         boundingBox.style.top = y + "px";
+//         boundingBox.style.width = width + "px";
+//         boundingBox.style.height = height + "px";
+//         imagePreview.appendChild(boundingBox);
+
+//         // Add label if needed
+//         const label = document.createElement("div");
+//         label.textContent = data.label;
+//         label.style.position = "absolute";
+//         label.style.left = x + "px";
+//         label.style.top = (y - 20) + "px"; // Adjust as needed
+//         label.style.color = "red"; // Adjust label styles as needed
+//         imagePreview.appendChild(label);
+//     });
+// }
+
+// Call the function to plot bounding boxes
+// plotBoundingBoxes();
+
 function clearFields() {
     document.getElementById("imagePreview").innerHTML = '<label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)"><p>Drag & Drop Your Document</p></label>';
     document.getElementById("textInput").value = "";
