@@ -1,287 +1,3 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Visual-LLMs for documents</title>
-<style>
-    body {
-        font-family: Arial, sans-serif;
-    }
-    .tab {
-  overflow: hidden;
-  border: 1px solid #ccc;
-  background-color: #f1f1f1;
-  border-radius: 5px;
-  margin-bottom: 20px;
-}
-#coordinatesDisplay {
-            position: absolute;
-            background-color: rgba(255, 255, 255, 0.8);
-            padding: 5px 10px;
-            border: 1px solid blue;
-            color: blue;
-            border-radius: 5px;
-            display: none;
-        }
-
-
-.selectionBox {
-    position: absolute;
-    border: 1px dashed red;
-    background-color: rgba(255, 0, 0, 0.1);
-    pointer-events: none;
-}
-
-
-.tab button {
-  background-color: inherit;
-  float: left;
-  border: none;
-  outline: none;
-  cursor: pointer;
-  padding: 10px 20px;
-  transition: 0.3s;
-  border-radius: 5px 5px 0 0;
-}
-
-.tab button:hover {
-  background-color: #ddd;
-}
-
-.tab button.active {
-  background-color: #ccc;
-}
-
-.tabcontent {
-  display: none;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-top: none;
-  border-radius: 0 0 5px 5px;
-}
-
-.tabcontent.active {
-  display: block;
-}
-.bounding-box {
-            position: absolute;
-            border: 2px solid red;
-            pointer-events: none;
-        }
-
-    .container {
-        display: flex;
-        max-width: 1000px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-    .left-section {
-        flex: 0 0 65%;
-        padding-right: 20px;
-    }
-    .right-section {
-        flex: 0 0 35%;
-        padding-left: 20px;
-        border-left: 1px solid #ccc;
-    }
-    .input-group {
-        margin-bottom: 20px;
-    }
-    .input-group label {
-        display: block;
-        margin-bottom: 5px;
-    }
-    .input-group input[type="file"] {
-        margin-top: 5px;
-    }
-    .input-group textarea {
-        width: calc(100% - 10px);
-        height: 50px;
-        resize: none;
-    }
-    .btn {
-        padding: 10px 20px;
-        background-color: #007bff;
-        color: #fff;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-    }
-    .btn:hover {
-        background-color: #0056b3;
-    }
-    #imagePreview {
-        max-width: 100%;
-        margin-top: 10px;
-    }
-    #imagePreview img {
-        max-width: 100%;
-        max-height: 300px;
-    }
-    .drag-drop {
-        border: 2px dashed #aaa;
-        border-radius: 5px;
-        padding: 20px;
-        text-align: center;
-        cursor: pointer;
-    }
-    #imageInput {
-        display: none;
-    }
-    #companyLogo {
-        max-width: 60px;
-        margin: 20px auto;
-        display: block;
-    }
-    .decoding-parameters {
-        padding: 20px;
-        background-color: #f9f9f9;
-        border-radius: 5px;
-    }
-    .decoding-parameters h3 {
-        margin-top: 0;
-    }
-    .slider-container {
-        margin-bottom: 15px;
-    }
-    .slider {
-        -webkit-appearance: none;
-        width: 100%;
-        height: 10px;
-        border-radius: 5px;
-        background: #d3d3d3;
-        outline: none;
-        opacity: 0.7;
-        -webkit-transition: .2s;
-        transition: opacity .2s;
-    }
-    .slider:hover {
-        opacity: 1;
-    }
-    .slider::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        appearance: none;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #4CAF50;
-        cursor: pointer;
-    }
-    .slider::-moz-range-thumb {
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #4CAF50;
-        cursor: pointer;
-    }
-    .center-align {
-        text-align: center;
-    }
-
-</style>
-</head>
-<body>
-<div class="container">
-    <div class="left-section">
-        <img src="https://nolano.ai/images/logo/logo.jpg" alt="Nolano Logo" id="companyLogo">
-        <!-- Add Nolano on top -->
-        <h2>Visual-LLMs for documents</h2>
-
-        <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
-        <div id="imagePreview" class="input-group">
-            <label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
-                <p>Drag & Drop Your Document</p>
-            </label>
-        </div>
-        <div class="input-group">
-            <label for="textInput">Text Prompt:</label>
-            <textarea id="textInput" placeholder="Enter your text prompt here..."></textarea>
-        </div>
-        <button class="btn" onclick="generateStory()">Submit</button>
-        <button class="btn" onclick="clearFields()">Clear</button>
-        <div id="output"></div>
-    </div>
-
-    <div class="right-section">
-      <div class="decoding-parameters">
-          <h3>Decoding Parameters</h3>
-          <div class="slider-container">
-              <label for="temperature">Temperature: <span id="temperatureValue">0.5</span></label>
-              <!-- Adjusted temperature slider -->
-              <input type="range" min="0" max="1" step="0.01" value="0.5" class="slider" id="temperatureSlider" onchange="updateTemperature()">
-          </div>
-          <div class="slider-container">
-              <label for="tokenLimit">Token Limit: <span id="tokenLimitValue">500</span></label>
-              <!-- Adjusted token limit slider -->
-              <input type="range" min="10" max="4096" step="1" value="500" class="slider" id="tokenLimitSlider" onchange="updateTokenLimit()">
-          </div>
-          <div class="tab">
-            <button class="tablinks active" onclick="openMode(event, 'docVLLM')">OCR+LLM </button>
-            <button class="tablinks" onclick="openMode(event, 'ocrVLLM')">VLLM (Coming soon)</button>
-          </div>
-          
-          <div id="docVLLM" class="tabcontent">
-            <!-- Content for Doc_VLLM mode -->
-          </div>
-          
-          <div id="ocrVLLM" class="tabcontent">
-            <!-- Content for OCR + VLLM mode -->
-          </div> 
-      </div>
-      <div class="side-title">
-        <h3 class="center-align">Blog on Hi-Nolin</h3>
-        <!-- QR codes -->
-        <div class="qr-codes">
-            <!-- Insert QR code images from local path /Users/tejasvaidhya/nolano/webapp/GNWBxQ_qrcode.png -->
-            <img src="/Users/tejasvaidhya/nolano/webapp/GNWBxQ_qrcode.png" alt="QR Code for Hi-Nolin" style="max-width: 200px; margin-bottom: 10px; margin-left: 70px;">
-
-        </div>
-        <p>Hi-NOLIN, The first state-of-the-art open-source English-Hindi bilingual model. We build upon the Pythia model suite, starting by expanding 7B Pythia architecture to a 9B model.</p>
-
-    </div>
-
-  </div>
-  <div id="coordinatesDisplay"></div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script> <!-- Include marked.js library -->
-     
-<script>
-
-// // Function to plot bounding boxes
-//     function plotBoundingBoxes() {
-//     const boundingBoxData = [
-//         { label: "Launch now", coordinates: [335, 126, 524, 141] },
-//         { label: "Build something people want", coordinates: [335, 165, 570, 180] },
-//         // Add other bounding box data here
-//     ];
-
-//     const imagePreview = document.getElementById("imagePreview");
-//     const image = imagePreview.querySelector("img");
-
-//     boundingBoxData.forEach(data => {
-//         const [x, y, width, height] = data.coordinates;
-//         const boundingBox = document.createElement("div");
-//         boundingBox.className = "bounding-box";
-//         boundingBox.style.left = x + "px";
-//         boundingBox.style.top = y + "px";
-//         boundingBox.style.width = width + "px";
-//         boundingBox.style.height = height + "px";
-//         imagePreview.appendChild(boundingBox);
-
-//         // Add label if needed
-//         const label = document.createElement("div");
-//         label.textContent = data.label;
-//         label.style.position = "absolute";
-//         label.style.left = x + "px";
-//         label.style.top = (y - 20) + "px"; // Adjust as needed
-//         label.style.color = "red"; // Adjust label styles as needed
-//         imagePreview.appendChild(label);
-//     });
-// }
-
-// Call the function to plot bounding boxes
-// plotBoundingBoxes();
 
 function clearFields() {
     document.getElementById("imagePreview").innerHTML = '<label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)"><p>Drag & Drop Your Document</p></label>';
@@ -291,19 +7,30 @@ function clearFields() {
 }
 
 function generateStory() {
-        var storyInput = document.getElementById('textInput').value;
+        var imageInput = document.getElementById('imageInput');
+        var textInput = document.getElementById('textInput');
+        var uploadedImageInput = document.getElementById('uploadedImage');
+        // log this to the console
+        console.log(imageInput.files);
+        console.log(textInput.value.trim());
+        console.log(uploadedImageInput.value);
+        if (imageInput.files.length === 0 || textInput.value.trim() === '') {
+            alert('Please upload an image and enter a text prompt.');
+            return;
+        }
+
+        // var storyInput = document.getElementById('textInput').value;
         var requestData = {
             contents: [
                 {
                     parts: [
                         {
-                            text: storyInput
+                            text: textInput.value
                         }
                     ]
                 }
             ]
         };
-
         fetch('/generate_story', {
             method: 'POST',
             headers: {
@@ -538,7 +265,3 @@ imagePreview.addEventListener("mouseleave", function() {
     var coordinatesDisplay = document.getElementById("coordinatesDisplay");
     coordinatesDisplay.style.display = "none";
 });
-
-</script>
-</body>
-</html>
