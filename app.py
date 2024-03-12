@@ -96,8 +96,9 @@ def generate_story():
                 response = Response(content=response_data['candidates'][0]['content']['parts'][0]['text'], user_id=user.id)
                 db.session.add(prompt)
                 db.session.add(response)
-
                 db.session.commit()
+                # commit the data to the database
+                print('Prompt and response stored in the database')
             except Exception as e:
                 db.session.rollback()  # Rollback changes if an error occurs
                 return jsonify({'error': 'Database error: ' + str(e)}), 500
