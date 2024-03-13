@@ -107,6 +107,7 @@ function displayStories(stories) {
     storyDiv.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)"; // Shadow effect
     storyDiv.style.padding = "20px";
     storyDiv.style.overflow = "auto";
+    storyDiv.style.marginBottom = "20px";
     if (
       data &&
       data.candidates &&
@@ -124,7 +125,8 @@ function displayStories(stories) {
       var markdownStory = "## Story\n\n" + story; // Adding markdown header
       storyDiv.innerHTML = marked(markdownStory); // Assuming marked.js library is used for markdown conversion
     } else {
-      storyDiv.textContent = "Unable to generate story. Please try again.";
+      storyDiv.display = "none";
+      // storyDiv.textContent = "Unable to generate story. Please try again.";
     }
 
     // Make the story clickable to handle user selection
@@ -135,6 +137,7 @@ function displayStories(stories) {
     });
 
     outputDiv.appendChild(storyDiv);
+    outputDiv.scrollIntoView({ behavior: "smooth", block: "end" });
   });
 }
 
@@ -146,12 +149,14 @@ function highlightStory(index) {
   selectedIndex = index;
 
   var storyDivs = document.querySelectorAll(".story");
-  document.getElementById("afterResponse").style.display = "none"; // Show the response section (if hidden
+  document.getElementById("afterResponse").style.display = "none";
 
   storyDivs.forEach((storyDiv, i) => {
     if (i === index) {
-      storyDiv.style.backgroundColor = "#ffffcc"; // Change the background color to yellow (or any other color you prefer)
+      storyDiv.style.backgroundColor = "#ffffcc";
+      storyDiv.style.display = "block"; // Show the selected story
     } else {
+      storyDiv.style.display = "none"; // Hide the unselected stories
       storyDiv.style.backgroundColor = ""; // Reset background color for unselected stories
     }
   });
@@ -163,9 +168,6 @@ function submitUserResponse(stories) {
     var selectedStory = stories[selectedIndex];
     var otherIndex = selectedIndex === 0 ? 1 : 0; // Index of the other story
     var otherStory = stories[otherIndex];
-
-    console.log("Selected story:", selectedStory);
-    console.log("Other story:", otherStory);
 
     var requestBody = {
       prompt: document.getElementById("textInput").value,
@@ -187,7 +189,6 @@ function submitUserResponse(stories) {
       .then((response) => {
         console.log("response:", response);
         if (response.ok === true) {
-          document.getElementById("output").style.display = "none";
           // Show the success message
           document.getElementById("successMessage").style.display = "block";
           console.log("User response submitted successfully.");
