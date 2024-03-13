@@ -1,133 +1,272 @@
-
 function clearFields() {
-    document.getElementById("imagePreview").innerHTML = '<label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)"><p>Drag & Drop Your Document</p></label>';
-    document.getElementById("textInput").value = "";
-    document.getElementById("output").innerHTML = "";
-    document.getElementById("imageInput").value = "";
+  document.getElementById("imagePreview").innerHTML =
+    '<label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)"><p>Drag & Drop Your Document</p></label>';
+  document.getElementById("textInput").value = "";
+  document.getElementById("output").innerHTML = "";
+  document.getElementById("imageInput").value = "";
+  document.getElementById("successMessage").style.display = "none";
+  document.getElementById("afterResponse").style.display = "none";
 }
 
 function generateStory() {
-        var imageInput = document.getElementById('imageInput');
-        var textInput = document.getElementById('textInput');
-        var uploadedImageInput = document.getElementById('uploadedImage');
-        // log this to the console
-        console.log(imageInput.files);
-        console.log(textInput.value.trim());
-        console.log(uploadedImageInput.value);
-        if (imageInput.files.length === 0 || textInput.value.trim() === '') {
-            alert('Please upload an image and enter a text prompt.');
-            return;
-        }
+  // Display loading text on the button
+  document.getElementById("submitButton").innerText = "Loading...";
 
-        // var storyInput = document.getElementById('textInput').value;
-        var requestData = {
-            contents: [
-                {
-                    parts: [
-                        {
-                            text: textInput.value
-                        }
-                    ]
-                }
-            ]
-        };
-        fetch('/generate_story', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(requestData)
-        })
-        // print the response to the console
-        .then(response => response.json())
-        .then(data => {
-            displayStory(data);
-            console.log(data);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
-    }
+  var imageInput = document.getElementById("imageInput");
+  var textInput = document.getElementById("textInput");
+  var uploadedImageInput = document.getElementById("uploadedImage");
 
-    function displayStory(data) {
-    var outputDiv = document.getElementById('output');
-    outputDiv.innerHTML = '';
-    if (data && data.candidates && data.candidates.length > 0 && data.candidates[0].content && data.candidates[0].content.parts && data.candidates[0].content.parts.length > 0) {
-        var story = data.candidates[0].content.parts[0].text;
-        var storyParagraph = document.createElement('p');
-        storyParagraph.textContent = story;
-        outputDiv.appendChild(storyParagraph);
+  if (imageInput.files.length === 0 || textInput.value.trim() === "") {
+    alert("Please upload an image and enter a text prompt.");
+    // Restore the original text on the button
+    document.getElementById("submitButton").innerText = "Submit";
+    return;
+  }
 
-        // Stream the received output and markdownify it
-        var markdownStory = '## Story\n\n' + story; // Adding markdown header
-        outputDiv.innerHTML = marked(markdownStory); // Assuming marked.js library is used for markdown conversion
+  // Retrieve current values from sliders
+  var temperatureSlider = document.getElementById("temperatureSlider");
+  var tokenLimitSlider = document.getElementById("tokenLimitSlider");
+
+  // Prepare the request data
+  var requestData = {
+    contents: [
+      {
+        parts: [
+          {
+            text: textInput.value,
+          },
+        ],
+      },
+    ],
+    generationConfig: {
+      temperature: temperatureSlider.value,
+      candidateCount: 1,
+      maxOutputTokens: tokenLimitSlider.value,
+    },
+  };
+
+  // Make two API calls with the same configuration
+  Promise.all([
+    fetch("/generate_story", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestData),
+    }),
+    fetch("/generate_story", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(modifyRequestData(requestData)),
+    }),
+  ])
+    .then((responses) =>
+      Promise.all(responses.map((response) => response.json()))
+    )
+    .then((data) => {
+      // Remove the loading text and display the resulting stories side by side
+      document.getElementById("submitButton").innerText = "Submit";
+      stories = data;
+      displayStories(data);
+    })
+    .catch((error) => {
+      // Remove the loading text in case of an error
+      console.error("Error:", error);
+      document.getElementById("submitButton").innerText = "Submit";
+    });
+}
+
+// Modify request data for the second API call
+function modifyRequestData(requestData) {
+  // Adjust temperature and maxOutputTokens for the second call
+  var modifiedRequestData = JSON.parse(JSON.stringify(requestData)); // Deep copy to avoid modifying original data
+  modifiedRequestData.generationConfig.temperature =
+    parseInt(modifiedRequestData.generationConfig.temperature) + 0.4; // Increase temperature by 0.4
+  modifiedRequestData.generationConfig.maxOutputTokens =
+    parseInt(modifiedRequestData.generationConfig.maxOutputTokens) + 100; // Increase maxOutputTokens by 100
+  return modifiedRequestData;
+}
+
+// Display stories side by side
+function displayStories(stories) {
+  var outputDiv = document.getElementById("output");
+  outputDiv.innerHTML = ""; // Clear previous content
+
+  document.getElementById("afterResponse").style.display = "block";
+
+  stories.forEach((data, index) => {
+    var storyDiv = document.createElement("div");
+    storyDiv.classList.add("story");
+    storyDiv.textContent = ""; // Clear previous content
+
+    // Add styling to the story div
+    storyDiv.style.background = index % 2 === 0 ? "#f0f0f0" : "#ffffff";
+    storyDiv.style.borderRadius = "8px"; // Rounded corners
+    storyDiv.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)"; // Shadow effect
+    storyDiv.style.padding = "20px"; // Padding
+    storyDiv.style.overflow = "auto"; // Add scrollbar if content overflows
+    if (
+      data &&
+      data.candidates &&
+      data.candidates.length > 0 &&
+      data.candidates[0].content &&
+      data.candidates[0].content.parts &&
+      data.candidates[0].content.parts.length > 0
+    ) {
+      var story = data.candidates[0].content.parts[0].text;
+      var storyParagraph = document.createElement("p");
+      storyParagraph.textContent = story;
+      storyDiv.appendChild(storyParagraph);
+
+      // Stream the received output and markdownify it
+      var markdownStory = "## Story\n\n" + story; // Adding markdown header
+      storyDiv.innerHTML = marked(markdownStory); // Assuming marked.js library is used for markdown conversion
     } else {
-        outputDiv.textContent = 'Unable to generate story. Please try again.';
+      storyDiv.textContent = "Unable to generate story. Please try again.";
     }
+
+    // Make the story clickable to handle user selection
+
+    storyDiv.addEventListener("click", function () {
+      highlightStory(index); // Pass the index to identify the selected story
+      submitUserResponse(stories, index);
+    });
+
+    outputDiv.appendChild(storyDiv);
+  });
+}
+
+var selectedIndex = -1;
+var stories = [];
+
+// Highlight the selected story
+function highlightStory(index) {
+  selectedIndex = index;
+
+  var storyDivs = document.querySelectorAll(".story");
+  document.getElementById("afterResponse").style.display = "none"; // Show the response section (if hidden
+
+  storyDivs.forEach((storyDiv, i) => {
+    if (i === index) {
+      storyDiv.style.backgroundColor = "#ffffcc"; // Change the background color to yellow (or any other color you prefer)
+    } else {
+      storyDiv.style.backgroundColor = ""; // Reset background color for unselected stories
+    }
+  });
+}
+
+// prepare request body for sentiments
+function submitUserResponse(stories) {
+  if (selectedIndex !== -1) {
+    var selectedStory = stories[selectedIndex];
+    var otherIndex = selectedIndex === 0 ? 1 : 0; // Index of the other story
+    var otherStory = stories[otherIndex];
+
+    console.log("Selected story:", selectedStory);
+    console.log("Other story:", otherStory);
+
+    var requestBody = {
+      prompt: document.getElementById("textInput").value,
+      selectedResponse: selectedStory.candidates[0].content.parts[0].text,
+      selectedSentiment: true, // Sentiment for selected story
+      otherResponse: otherStory.candidates[0].content.parts[0].text,
+      otherSentiment: false, // Sentiment for other story
+    };
+
+    // Make a POST request to the backend with the request body
+
+    fetch("/submit_user_response", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
+      .then((response) => {
+        console.log("response:", response);
+        if (response.ok === true) {
+          document.getElementById("output").style.display = "none";
+          // Show the success message
+          document.getElementById("successMessage").style.display = "block";
+          console.log("User response submitted successfully.");
+        } else {
+          console.error("Failed to submit user response.");
+        }
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+
+    console.log("requestBody for sentiment analysis:", requestBody);
+  } else {
+    console.error("No story selected.");
+  }
 }
 
 function handleImageUpload(event) {
-    var imageInput = event.target;
-    var imagePreview = document.getElementById("imagePreview");
-    var file = imageInput.files[0];
+  var imageInput = event.target;
+  var imagePreview = document.getElementById("imagePreview");
+  var file = imageInput.files[0];
 
-    if (file) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            var img = new Image();
-            img.onload = function() {
-                var canvas = document.createElement('canvas');
-                var ctx = canvas.getContext('2d');
-                var maxWidth = 400;
-                var maxHeight = 400;
-                var width = img.width;
-                var height = img.height;
+  if (file) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        var maxWidth = 400;
+        var maxHeight = 400;
+        var width = img.width;
+        var height = img.height;
 
-                if (width > height) {
-                    if (width > maxWidth) {
-                        height *= maxWidth / width;
-                        width = maxWidth;
-                    }
-                } else {
-                    if (height > maxHeight) {
-                        width *= maxHeight / height;
-                        height = maxHeight;
-                    }
-                }
+        if (width > height) {
+          if (width > maxWidth) {
+            height *= maxWidth / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width *= maxHeight / height;
+            height = maxHeight;
+          }
+        }
 
-                canvas.width = width;
-                canvas.height = height;
-                ctx.drawImage(img, 0, 0, width, height);
-                var resizedImage = canvas.toDataURL('image/jpeg');
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+        var resizedImage = canvas.toDataURL("image/jpeg");
 
-                var imgElement = document.createElement("img");
-                imgElement.src = resizedImage;
-                imgElement.alt = "Uploaded Image";
-                imagePreview.innerHTML = "";
-                imagePreview.appendChild(imgElement);
-            };
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
+        var imgElement = document.createElement("img");
+        imgElement.src = resizedImage;
+        imgElement.alt = "Uploaded Image";
+        imagePreview.innerHTML = "";
+        imagePreview.appendChild(imgElement);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function streamMarkdownOutput(content, outputDiv) {
-    const contentArray = content.split('\n');
-    let i = 0;
-    const interval = setInterval(() => {
-        if (i < contentArray.length) {
-            const line = contentArray[i];
-            outputDiv.innerHTML += marked(line) + ''; // Append Markdown content with line break
-            i++;
-        } else {
-            clearInterval(interval); // Stop streaming when all lines are appended
-        }
-    }, 300); // Adjust streaming speed as needed
+  const contentArray = content.split("\n");
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < contentArray.length) {
+      const line = contentArray[i];
+      outputDiv.innerHTML += marked(line) + ""; // Append Markdown content with line break
+      i++;
+    } else {
+      clearInterval(interval); // Stop streaming when all lines are appended
+    }
+  }, 300); // Adjust streaming speed as needed
 }
 
 function getImageAndTextPrompt() {
-    const bulletPointsHtml = `
+  const bulletPointsHtml = `
 <ul>
   <li>Launch now (bounding box: 335, 126, 524, 141)</li>
   <li>Build something people want (bounding box: 335, 165, 570, 180)</li>
@@ -154,7 +293,7 @@ function getImageAndTextPrompt() {
 </ul>
 `;
 
-    const pocketGuideMarkdown = `
+  const pocketGuideMarkdown = `
 # The Pocket Guide of Essential YC Advice
 
 - Launch now
@@ -181,79 +320,77 @@ function getImageAndTextPrompt() {
 - Get sleep and exercise - take care of yourself
 `;
 
-    const outputDiv = document.getElementById("output");
-    outputDiv.innerHTML = ""; // Clear previous content
-    const imagePreview = document.getElementById("imagePreview");
-    const imageInput = document.getElementById("imageInput");
+  const outputDiv = document.getElementById("output");
+  outputDiv.innerHTML = ""; // Clear previous content
+  const imagePreview = document.getElementById("imagePreview");
+  const imageInput = document.getElementById("imageInput");
 
-    // Create image element
-    if (imageInput.files && imageInput.files[0]) {
-        const file = imageInput.files[0];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const image = document.createElement("img");
-            image.src = e.target.result;
-            image.alt = "Uploaded Image";
-            imagePreview.innerHTML = "";
-            imagePreview.appendChild(image);
-        }
-        reader.readAsDataURL(file);
-    }
+  // Create image element
+  if (imageInput.files && imageInput.files[0]) {
+    const file = imageInput.files[0];
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const image = document.createElement("img");
+      image.src = e.target.result;
+      image.alt = "Uploaded Image";
+      imagePreview.innerHTML = "";
+      imagePreview.appendChild(image);
+    };
+    reader.readAsDataURL(file);
+  }
 
-    // Stream Markdown content
-    streamMarkdownOutput(bulletPointsHtml, outputDiv);
+  // Stream Markdown content
+  streamMarkdownOutput(bulletPointsHtml, outputDiv);
 }
 
-    function dragOverHandler(event) {
-        event.preventDefault();
-        event.dataTransfer.dropEffect = "copy";
-    }
+function dragOverHandler(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = "copy";
+}
 
-    function updateTemperature() {
-    var slider = document.getElementById("temperatureSlider");
-    var value = slider.value;
-    document.getElementById("temperatureValue").innerText = value;
+function updateTemperature() {
+  var slider = document.getElementById("temperatureSlider");
+  temperatureValue = slider.value;
 }
 
 function updateTokenLimit() {
-    var slider = document.getElementById("tokenLimitSlider");
-    var value = slider.value;
-    document.getElementById("tokenLimitValue").innerText = value;
+  var slider = document.getElementById("tokenLimitSlider");
+  tokenLimitValue = slider.value;
 }
 
-    function dropHandler(event) {
-        event.preventDefault();
-        var files = event.dataTransfer.files;
-        var imageInput = document.getElementById("imageInput");
-        imageInput.files = files;
-        handleImageUpload(event);
-    }
+function dropHandler(event) {
+  event.preventDefault();
+  var files = event.dataTransfer.files;
+  var imageInput = document.getElementById("imageInput");
+  imageInput.files = files;
+  handleImageUpload(event);
+}
 
-    function updateTemperature() {
-        var slider = document.getElementById("temperatureSlider");
-        var value = slider.value;
-        document.getElementById("temperatureValue").innerText = value;
-    }
+function updateTemperature() {
+  var slider = document.getElementById("temperatureSlider");
+  var value = slider.value;
+  document.getElementById("temperatureValue").innerText = value;
+}
 
-    function updateTokenLimit() {
-        var slider = document.getElementById("tokenLimitSlider");
-        var value = slider.value;
-        document.getElementById("tokenLimitValue").innerText = value;
-    }
+function updateTokenLimit() {
+  var slider = document.getElementById("tokenLimitSlider");
+  var value = slider.value;
+  document.getElementById("tokenLimitValue").innerText = value;
+}
 
-    // Function to get coordinates on hover
-    function getCoordinates(event) {
-    var image = event.target;
-    var rect = image.getBoundingClientRect(); // Get the position of the image relative to the viewport
-    var x = event.clientX - rect.left; // Calculate the x-coordinate relative to the image
-    var y = event.clientY - rect.top; // Calculate the y-coordinate relative to the image
+// Function to get coordinates on hover
+function getCoordinates(event) {
+  var image = event.target;
+  var rect = image.getBoundingClientRect(); // Get the position of the image relative to the viewport
+  var x = event.clientX - rect.left; // Calculate the x-coordinate relative to the image
+  var y = event.clientY - rect.top; // Calculate the y-coordinate relative to the image
 
-    // Display the coordinates
-    var coordinatesDisplay = document.getElementById("coordinatesDisplay");
-    coordinatesDisplay.style.display = "block";
-    coordinatesDisplay.style.left = event.clientX + "px";
-    coordinatesDisplay.style.top = event.clientY + "px";
-    coordinatesDisplay.textContent = "(" + x + ", " + y + ")";
+  // Display the coordinates
+  var coordinatesDisplay = document.getElementById("coordinatesDisplay");
+  coordinatesDisplay.style.display = "block";
+  coordinatesDisplay.style.left = event.clientX + "px";
+  coordinatesDisplay.style.top = event.clientY + "px";
+  coordinatesDisplay.textContent = "(" + x + ", " + y + ")";
 }
 
 // Add event listener to the image for mousemove event
@@ -261,7 +398,7 @@ var imagePreview = document.getElementById("imagePreview");
 imagePreview.addEventListener("mousemove", getCoordinates);
 
 // Hide coordinates display when mouse leaves the image
-imagePreview.addEventListener("mouseleave", function() {
-    var coordinatesDisplay = document.getElementById("coordinatesDisplay");
-    coordinatesDisplay.style.display = "none";
+imagePreview.addEventListener("mouseleave", function () {
+  var coordinatesDisplay = document.getElementById("coordinatesDisplay");
+  coordinatesDisplay.style.display = "none";
 });

@@ -1,76 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Visual-LLMs for documents</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}"></head>
-<body>
-<div class="container">
-    <div class="left-section">
-        <img src="https://nolano.ai/images/logo/logo.jpg" alt="Nolano Logo" id="companyLogo">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
+  </head>
+  <body>
+    <div class="container">
+      <div class="left-section">
+        <img
+          src="https://nolano.ai/images/logo/logo.jpg"
+          alt="Nolano Logo"
+          id="companyLogo"
+        />
         <!-- Add Nolano on top -->
         <h2>Visual-LLMs for documents</h2>
 
-        <input type="file" id="imageInput" accept="image/*" onchange="handleImageUpload(event)">
-        <input type="hidden" id="uploadedImage" name="uploaded_image">
+        <input
+          type="file"
+          id="imageInput"
+          accept="image/*"
+          onchange="handleImageUpload(event)"
+        />
+        <input type="hidden" id="uploadedImage" name="uploaded_image" />
 
         <div id="imagePreview" class="input-group">
-            <label for="imageInput" class="drag-drop" ondragover="dragOverHandler(event)" ondrop="dropHandler(event)">
-                <p>Drag & Drop Your Document</p>
-            </label>
+          <label
+            for="imageInput"
+            class="drag-drop"
+            ondragover="dragOverHandler(event)"
+            ondrop="dropHandler(event)"
+          >
+            <p>Drag & Drop Your Document</p>
+          </label>
         </div>
         <div class="input-group">
-            <label for="textInput">Text Prompt:</label>
-            <textarea id="textInput" placeholder="Enter your text prompt here..."></textarea>
+          <label for="textInput">Text Prompt:</label>
+          <textarea
+            id="textInput"
+            placeholder="Enter your text prompt here..."
+          ></textarea>
         </div>
-        <button class="btn" onclick="generateStory()">Submit</button>
+        <button class="btn" id="submitButton" onclick="generateStory()">
+          Submit
+        </button>
         <button class="btn" onclick="clearFields()">Clear</button>
-        <div id="output"></div>
-    </div>
+        <h3 id="afterResponse" style="display: none">
+          Which response you would prefer?
+        </h3>
+        <div class="story-container" id="output">
+          <!-- Story divs will be appended here -->
+        </div>
+        <div
+          id="successMessage"
+          style="
+            display: none;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+            color: #155724;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+          "
+        >
+          <p
+            style="
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              font-size: 18px;
+              line-height: 1.6;
+              color: #555;
+            "
+          >
+            Your response has been submitted successfully.
+          </p>
+        </div>
+      </div>
 
-    <div class="right-section">
-      <div class="decoding-parameters">
+      <div class="right-section">
+        <div class="decoding-parameters">
           <h3>Decoding Parameters</h3>
           <div class="slider-container">
-              <label for="temperature">Temperature: <span id="temperatureValue">0.5</span></label>
-              <!-- Adjusted temperature slider -->
-              <input type="range" min="0" max="1" step="0.01" value="0.5" class="slider" id="temperatureSlider" onchange="updateTemperature()">
+            <label for="temperature"
+              >Temperature: <span id="temperatureValue">0.5</span></label
+            >
+            <!-- Adjusted temperature slider -->
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.01"
+              value="0.5"
+              class="slider"
+              id="temperatureSlider"
+              onchange="updateTemperature()"
+            />
           </div>
           <div class="slider-container">
-              <label for="tokenLimit">Token Limit: <span id="tokenLimitValue">500</span></label>
-              <!-- Adjusted token limit slider -->
-              <input type="range" min="10" max="4096" step="1" value="500" class="slider" id="tokenLimitSlider" onchange="updateTokenLimit()">
+            <label for="tokenLimit"
+              >Token Limit: <span id="tokenLimitValue">500</span></label
+            >
+            <!-- Adjusted token limit slider -->
+            <input
+              type="range"
+              min="10"
+              max="4096"
+              step="1"
+              value="500"
+              class="slider"
+              id="tokenLimitSlider"
+              onchange="updateTokenLimit()"
+            />
           </div>
           <div class="tab">
-            <button class="tablinks active" onclick="openMode(event, 'docVLLM')">OCR+LLM </button>
-            <button class="tablinks" onclick="openMode(event, 'ocrVLLM')">VLLM (Coming soon)</button>
+            <button
+              class="tablinks active"
+              onclick="openMode(event, 'docVLLM')"
+            >
+              OCR+LLM
+            </button>
+            <button class="tablinks" onclick="openMode(event, 'ocrVLLM')">
+              VLLM (Coming soon)
+            </button>
           </div>
-          
+
           <div id="docVLLM" class="tabcontent">
             <!-- Content for Doc_VLLM mode -->
           </div>
-          
+
           <div id="ocrVLLM" class="tabcontent">
             <!-- Content for OCR + VLLM mode -->
-          </div> 
-      </div>
-      <div class="side-title">
-        <h3 class="center-align">Blog on Hi-Nolin</h3>
-        <!-- QR codes -->
-        <div class="qr-codes">
-            <!-- Insert QR code images from local path /Users/tejasvaidhya/nolano/webapp/GNWBxQ_qrcode.png -->
-            <img src="/Users/tejasvaidhya/nolano/webapp/GNWBxQ_qrcode.png" alt="QR Code for Hi-Nolin" style="max-width: 200px; margin-bottom: 10px; margin-left: 70px;">
-
+          </div>
         </div>
-        <p>Hi-NOLIN, The first state-of-the-art open-source English-Hindi bilingual model. We build upon the Pythia model suite, starting by expanding 7B Pythia architecture to a 9B model.</p>
-
+        <div class="side-title">
+          <h3 class="center-align">Blog on Hi-Nolin</h3>
+          <!-- QR codes -->
+          <div class="qr-codes">
+            <!-- Insert QR code images from local path /Users/tejasvaidhya/nolano/webapp/GNWBxQ_qrcode.png -->
+            <img
+              src="/static/GNWBxQ_qrcode.png"
+              alt="QR code for Hi-Nolin"
+              style="
+                max-width: 200px;
+                margin-bottom: 10px;
+                margin-left: 70px;
+                border-radius: 15px;
+                padding: 5px;
+              "
+            />
+          </div>
+        </div>
+        <p
+          style="
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #555;
+            margin-bottom: 20px;
+          "
+        >
+          Hi-NOLIN, The first state-of-the-art open-source English-Hindi
+          bilingual model. We build upon the Pythia model suite, starting by
+          expanding 7B Pythia architecture to a 9B model.
+        </p>
+      </div>
     </div>
-
-  </div>
-  <div id="coordinatesDisplay"></div>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script> <!-- Include marked.js library -->
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>     
-
-</body>
+    <div id="coordinatesDisplay"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/3.0.0/marked.min.js"></script>
+    <!-- Include marked.js library -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  </body>
 </html>
