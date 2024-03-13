@@ -83,9 +83,9 @@ function modifyRequestData(requestData) {
   // Adjust temperature and maxOutputTokens for the second call
   var modifiedRequestData = JSON.parse(JSON.stringify(requestData)); // Deep copy to avoid modifying original data
   modifiedRequestData.generationConfig.temperature =
-    parseInt(modifiedRequestData.generationConfig.temperature) + 0.4; // Increase temperature by 0.4
+    parseInt(modifiedRequestData.generationConfig.temperature) + 0.4;
   modifiedRequestData.generationConfig.maxOutputTokens =
-    parseInt(modifiedRequestData.generationConfig.maxOutputTokens) + 100; // Increase maxOutputTokens by 100
+    parseInt(modifiedRequestData.generationConfig.maxOutputTokens) + 100;
   return modifiedRequestData;
 }
 
@@ -105,8 +105,8 @@ function displayStories(stories) {
     storyDiv.style.background = index % 2 === 0 ? "#f0f0f0" : "#ffffff";
     storyDiv.style.borderRadius = "8px"; // Rounded corners
     storyDiv.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.1)"; // Shadow effect
-    storyDiv.style.padding = "20px"; // Padding
-    storyDiv.style.overflow = "auto"; // Add scrollbar if content overflows
+    storyDiv.style.padding = "20px";
+    storyDiv.style.overflow = "auto";
     if (
       data &&
       data.candidates &&
