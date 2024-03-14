@@ -125,7 +125,7 @@ function displayStories(stories) {
       var markdownStory = "## Story\n\n" + story; // Adding markdown header
       storyDiv.innerHTML = marked(markdownStory); // Assuming marked.js library is used for markdown conversion
     } else {
-      storyDiv.display = "none";
+      storyDiv.style.display = "none";
       // storyDiv.textContent = "Unable to generate story. Please try again.";
     }
 
@@ -138,6 +138,7 @@ function displayStories(stories) {
 
     outputDiv.appendChild(storyDiv);
     outputDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+    document.getElementById("successMessage").style.display = "none";
   });
 }
 
